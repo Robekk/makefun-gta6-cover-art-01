@@ -1,23 +1,101 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Cover Snap</title>
-<link rel="stylesheet" href="./style.css">
+<title>Marina Heat — Cover Studio</title>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-<main class="app">
-  <section class="controls">
-    <h1>Cover Snap</h1>
-    <p>A photo and a caption, made into a square cover.</p>
-    <label>Photo <input id="photo" type="file" accept="image/*"></label>
-    <label>Caption <input id="caption" type="text" maxlength="40" value="Sunset Heist"></label>
-    <button id="export" type="button">Export PNG 1080 x 1080</button>
-    <p id="status" role="status"></p>
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-mark">MH</span>
+    <div>
+      <h1>Marina Heat <span class="brand-sub">Cover Studio</span></h1>
+      <p>Multi-panel, GTA-style cover art from your own photos — graded, lettered and exported as a PNG.</p>
+    </div>
+  </div>
+  <div class="export-box">
+    <div class="size-group" role="group" aria-label="Export size">
+      <button type="button" data-size="square">1080 × 1080</button>
+      <button type="button" data-size="portrait">1080 × 1350</button>
+      <button type="button" data-size="wide" class="active">1920 × 1080</button>
+    </div>
+    <button type="button" id="export-btn" class="export-btn">Export PNG</button>
+  </div>
+</header>
+
+<main>
+  <aside class="controls">
+    <section>
+      <h2>1 · Photos</h2>
+      <div id="photo-strip" class="photo-strip"></div>
+      <label class="add-photo" for="photo-input">+ Add your photos</label>
+      <input type="file" id="photo-input" accept="image/*" multiple hidden>
+      <p class="hint">A photo fills the selected panel when you click it. Photos are read on this machine only — nothing is uploaded.</p>
+    </section>
+
+    <section>
+      <h2>2 · Layout</h2>
+      <div id="layout-group" class="btn-grid"></div>
+    </section>
+
+    <section>
+      <h2>3 · Colour grade</h2>
+      <div id="palette-group" class="btn-grid"></div>
+      <label class="slider-row">Grade strength
+        <input type="range" id="strength" min="0" max="100" value="100">
+      </label>
+      <label class="check-row">
+        <input type="checkbox" id="halftone" checked> Halftone dot screen
+      </label>
+    </section>
+
+    <section>
+      <h2>4 · Panel crop</h2>
+      <p id="panel-status" class="hint">Loading photos…</p>
+      <label class="slider-row">Zoom
+        <input type="range" id="zoom" min="100" max="400" value="100">
+      </label>
+      <button type="button" id="reset-crop" class="ghost-btn">Reset crop</button>
+      <p class="hint">Click a panel on the cover to select it. Drag its photo to position the crop; scroll over the cover to zoom.</p>
+    </section>
+
+    <section>
+      <h2>5 · Lettering</h2>
+      <label class="field">Kicker
+        <input type="text" id="title-kicker" maxlength="48">
+      </label>
+      <label class="field">Title line 1
+        <input type="text" id="title-line1" maxlength="16">
+      </label>
+      <label class="field">Title line 2
+        <input type="text" id="title-line2" maxlength="16">
+      </label>
+      <label class="field">Script subtitle
+        <input type="text" id="title-script" maxlength="40">
+      </label>
+      <label class="field">Tagline
+        <input type="text" id="title-tagline" maxlength="56">
+      </label>
+      <label class="check-row">
+        <input type="checkbox" id="badge-on" checked> Starburst badge
+      </label>
+      <label class="field">Badge top
+        <input type="text" id="badge-top" maxlength="10">
+      </label>
+      <label class="field">Badge bottom
+        <input type="text" id="badge-bottom" maxlength="14">
+      </label>
+    </section>
+  </aside>
+
+  <section class="stage">
+    <canvas id="preview" width="940" height="529"></canvas>
+    <p class="hint stage-hint">Live preview — the export renders this exact art at full size. Three steps: pick photos, pick a look, export.</p>
   </section>
-  <canvas id="cover" width="1080" height="1080" aria-label="The cover"></canvas>
 </main>
-<script type="module" src="./src/main.js"></script>
+
+<script type="module" src="src/editor.js"></script>
 </body>
 </html>
