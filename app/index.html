@@ -3,99 +3,100 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Marina Heat — Cover Studio</title>
+<title>Marina Heat — Cast Cover Studio</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <header class="topbar">
   <div class="brand">
-    <span class="brand-mark">MH</span>
-    <div>
-      <h1>Marina Heat <span class="brand-sub">Cover Studio</span></h1>
-      <p>Multi-panel, GTA-style cover art from your own photos — graded, lettered and exported as a PNG.</p>
-    </div>
+    <span class="brand-mark">★</span>
+    <span class="brand-name">MARINA HEAT</span>
+    <span class="brand-sub">Cast Cover Studio</span>
   </div>
-  <div class="export-box">
-    <div class="size-group" role="group" aria-label="Export size">
-      <button type="button" data-size="square">1080 × 1080</button>
-      <button type="button" data-size="portrait">1080 × 1350</button>
-      <button type="button" data-size="wide" class="active">1920 × 1080</button>
+  <div class="top-actions">
+    <div class="switcher" role="group" aria-label="Layout">
+      <button type="button" data-layout="landscape" class="active">Landscape</button>
+      <button type="button" data-layout="square">Square</button>
+      <button type="button" data-layout="portrait">Portrait</button>
     </div>
-    <button type="button" id="export-btn" class="export-btn">Export PNG</button>
+    <label class="palette-pick">Palette
+      <select id="paletteSelect"></select>
+    </label>
+    <div class="exports" role="group" aria-label="Export PNG">
+      <button type="button" data-export="landscape">PNG 1920×1080</button>
+      <button type="button" data-export="square">PNG 1080×1080</button>
+      <button type="button" data-export="portrait">PNG 1080×1350</button>
+    </div>
   </div>
 </header>
 
-<main>
-  <aside class="controls">
-    <section>
-      <h2>1 · Photos</h2>
-      <div id="photo-strip" class="photo-strip"></div>
-      <label class="add-photo" for="photo-input">+ Add your photos</label>
-      <input type="file" id="photo-input" accept="image/*" multiple hidden>
-      <p class="hint">A photo fills the selected panel when you click it. Photos are read on this machine only — nothing is uploaded.</p>
-    </section>
+<main class="layout">
+  <section class="stage">
+    <canvas id="cover" width="1920" height="1080"></canvas>
+    <p class="hint">Drag the cover to reframe the selected cast member · scroll to zoom their shot.</p>
+  </section>
 
-    <section>
-      <h2>2 · Layout</h2>
-      <div id="layout-group" class="btn-grid"></div>
-    </section>
-
-    <section>
-      <h2>3 · Colour grade</h2>
-      <div id="palette-group" class="btn-grid"></div>
-      <label class="slider-row">Grade strength
-        <input type="range" id="strength" min="0" max="100" value="100">
-      </label>
-      <label class="check-row">
-        <input type="checkbox" id="halftone" checked> Halftone dot screen
+  <aside class="panel">
+    <section class="block">
+      <h2>Cast panels</h2>
+      <div id="chips" class="chips"></div>
+      <h3>Photo for the selected panel</h3>
+      <div id="photoGrid" class="photo-grid"></div>
+      <label class="upload">Use your own photo
+        <input type="file" id="ownPhoto" accept="image/*">
       </label>
     </section>
 
-    <section>
-      <h2>4 · Panel crop</h2>
-      <p id="panel-status" class="hint">Loading photos…</p>
-      <label class="slider-row">Zoom
-        <input type="range" id="zoom" min="100" max="400" value="100">
+    <section class="block">
+      <h2>Selected panel</h2>
+      <label>Role tag
+        <input type="text" id="roleInput" autocomplete="off">
       </label>
-      <button type="button" id="reset-crop" class="ghost-btn">Reset crop</button>
-      <p class="hint">Click a panel on the cover to select it. Drag its photo to position the crop; scroll over the cover to zoom.</p>
+      <label>Name
+        <input type="text" id="nameInput" autocomplete="off">
+      </label>
+      <label>Zoom <span id="zoomVal"></span>
+        <input type="range" id="zoomRange" min="1" max="3" step="0.01">
+      </label>
+      <p class="crop-read" id="cropRead"></p>
+      <button type="button" id="resetCrop" class="ghost">Reset framing</button>
     </section>
 
-    <section>
-      <h2>5 · Lettering</h2>
-      <label class="field">Kicker
-        <input type="text" id="title-kicker" maxlength="48">
+    <section class="block" id="words">
+      <h2>Words &amp; furniture</h2>
+      <label>Title
+        <input type="text" data-word="title" autocomplete="off">
       </label>
-      <label class="field">Title line 1
-        <input type="text" id="title-line1" maxlength="16">
+      <label>Subtitle (script)
+        <input type="text" data-word="subtitle" autocomplete="off">
       </label>
-      <label class="field">Title line 2
-        <input type="text" id="title-line2" maxlength="16">
+      <label>Ribbon
+        <input type="text" data-word="ribbon" autocomplete="off">
       </label>
-      <label class="field">Script subtitle
-        <input type="text" id="title-script" maxlength="40">
+      <label>Quote bar
+        <input type="text" data-word="quote" autocomplete="off">
       </label>
-      <label class="field">Tagline
-        <input type="text" id="title-tagline" maxlength="56">
+      <label>Publisher
+        <input type="text" data-word="publisher" autocomplete="off">
       </label>
-      <label class="check-row">
-        <input type="checkbox" id="badge-on" checked> Starburst badge
+      <label>Volume
+        <input type="text" data-word="volume" autocomplete="off">
       </label>
-      <label class="field">Badge top
-        <input type="text" id="badge-top" maxlength="10">
+      <label>Billing block
+        <input type="text" data-word="billing" autocomplete="off">
       </label>
-      <label class="field">Badge bottom
-        <input type="text" id="badge-bottom" maxlength="14">
+      <label>Coming soon
+        <input type="text" data-word="comingSoon" autocomplete="off">
+      </label>
+      <label>Seal text
+        <input type="text" data-word="seal" autocomplete="off">
       </label>
     </section>
   </aside>
-
-  <section class="stage">
-    <canvas id="preview" width="940" height="529"></canvas>
-    <p class="hint stage-hint">Live preview — the export renders this exact art at full size. Three steps: pick photos, pick a look, export.</p>
-  </section>
 </main>
 
-<script type="module" src="src/editor.js"></script>
+<script src="src/state.js"></script>
+<script src="src/cover.js"></script>
+<script src="src/main.js"></script>
 </body>
 </html>

@@ -1,82 +1,53 @@
-// Marina Heat Cover Studio — handover program for the gta6-cover-art-01
-// bounty (Node 22, standard library only).
-//
-// The entry itself is the static web app under app/: plain files a desktop
-// browser runs offline, with the screenshots the maker took of it under
-// screenshots/. This program's whole job is to hand that entry in — copy
-// app/ and screenshots/ into the output directory and write the dossier
-// the judge reads, using the kit's vendored buildDossier so the bytes are
-// exactly the ones the gate rebuilds and compares.
-//
-// Run it the way the grader does, with MAKEFUN_OUTPUT_DIR standing in for
-// /output outside the container:
-//   mkdir -p out && MAKEFUN_OUTPUT_DIR=out node main.ts
+// Marina Heat — Cast Cover Studio: the make.fun entry program.
+// Copies app/ and screenshots/ into the output directory and writes the
+// dossier the scorer rebuilds: dossier.json is buildDossier's canonical
+// bytes over that output, so the same tree always writes the same dossier.
+// Node 22, standard library only.
 
-import { cpSync, existsSync, mkdirSync, readdirSync, statSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { buildDossier } from './vendor/makefun-app.ts';
 
-const repoDir = fileURLToPath(new URL('.', import.meta.url));
-const outputDir = process.env.MAKEFUN_OUTPUT_DIR ?? '/output';
+/** The most bytes a dossier may hold for this bounty: 1.5 MiB. */
+const DOSSIER_CAP_BYTES = 1572864;
 
-mkdirSync(outputDir, { recursive: true });
-cpSync(join(repoDir, 'app'), join(outputDir, 'app'), { recursive: true });
+const root = fileURLToPath(new URL('.', import.meta.url));
+const outDir = process.env.MAKEFUN_OUTPUT_DIR ?? '/output';
 
-const shotsDir = join(repoDir, 'screenshots');
-if (existsSync(shotsDir)) {
-  cpSync(shotsDir, join(outputDir, 'screenshots'), { recursive: true });
+// Fail loudly on a checkout that is missing a tree the entry is made of,
+// instead of copying half an entry and writing a dossier over the gap.
+for (const name of ['app', 'screenshots']) {
+  const dir = join(root, name);
+  if (!existsSync(dir) || !statSync(dir).isDirectory()) {
+    throw new Error(`main.ts: ${name}/ is missing from the repository root (${dir})`);
+  }
 }
 
-// The caps below are the gate's own (see the kit's RULES.txt): the dossier
-// is refused rather than truncated when the entry breaks them, so the
-// program passes them through and lets buildDossier speak for the entry.
-const dossier = buildDossier(outputDir, {
+// A clean output directory: no stale file from an earlier run may leak in.
+rmSync(outDir, { recursive: true, force: true });
+mkdirSync(outDir, { recursive: true });
+
+cpSync(join(root, 'app'), join(outDir, 'app'), { recursive: true });
+cpSync(join(root, 'screenshots'), join(outDir, 'screenshots'), { recursive: true });
+
+// The page the whole entry hangs on must have made the trip.
+if (!existsSync(join(outDir, 'app', 'index.html'))) {
+  throw new Error('main.ts: app/index.html did not land in the output directory');
+}
+
+const dossier = buildDossier(outDir, {
   text_max_bytes: 163840,
   screenshots: { max: 4, max_bytes: 262144 },
   app_max_files: 993,
   app_max_bytes: 50331648,
   app_path_max_bytes: 1000,
 });
-writeFileSync(join(outputDir, 'dossier.json'), dossier);
-
-// Self-check before the entry leaves the bench: walk what was just written
-// and hold it against the same caps the gate enforces, so an oversized
-// screenshot or a swollen app/ fails here — where the maker can fix it —
-// instead of at the scorer. The dossier's byte size is checked too.
-function walk(dir, base, acc) {
-  for (const name of readdirSync(dir)) {
-    const full = join(dir, name);
-    const rel = base ? `${base}/${name}` : name;
-    const stat = statSync(full);
-    if (stat.isDirectory()) walk(full, rel, acc);
-    else acc.push({ path: rel, bytes: stat.size });
-  }
-  return acc;
+if (dossier.length > DOSSIER_CAP_BYTES) {
+  throw new Error(
+    `main.ts: dossier.json would be ${dossier.length} bytes, over the ${DOSSIER_CAP_BYTES}-byte cap`,
+  );
 }
+writeFileSync(join(outDir, 'dossier.json'), dossier);
 
-const appFiles = walk(join(outputDir, 'app'), 'app', []);
-const appBytes = appFiles.reduce((sum, f) => sum + f.bytes, 0);
-const shotFiles = existsSync(join(outputDir, 'screenshots'))
-  ? walk(join(outputDir, 'screenshots'), 'screenshots', [])
-  : [];
-const dossierBytes = Buffer.byteLength(dossier);
-
-const problems = [];
-if (appFiles.length > 993) problems.push(`app/ holds ${appFiles.length} files, over the 993 cap`);
-if (appBytes > 50331648) problems.push(`app/ totals ${appBytes} bytes, over the 48 MiB cap`);
-if (shotFiles.length < 3 || shotFiles.length > 4) {
-  problems.push(`screenshots/ holds ${shotFiles.length} images, outside the 3–4 the gate takes`);
-}
-for (const shot of shotFiles) {
-  if (shot.bytes > 262144) problems.push(`${shot.path} is ${shot.bytes} bytes, over the 256 KiB cap`);
-}
-if (dossierBytes > 1572864) problems.push(`dossier.json is ${dossierBytes} bytes, over the 1.5 MiB cap`);
-
-if (problems.length) {
-  throw new Error(`entry self-check failed:\n - ${problems.join('\n - ')}`);
-}
-console.log(
-  `marina-heat: handed in ${appFiles.length} app files (${appBytes} bytes), ` +
-    `${shotFiles.length} screenshots, dossier ${dossierBytes} bytes`,
-);
+console.log(`dossier.json: ${dossier.length} bytes -> ${join(outDir, 'dossier.json')}`);

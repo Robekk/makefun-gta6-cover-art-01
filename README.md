@@ -1,76 +1,62 @@
-# Marina Heat — Cover Studio
-
 [![gta6-cover-art-01](https://make.fun/badge/gta6-cover-art-01.svg)](https://make.fun/bounty/gta6-cover-art-01)
 [![rank](https://make.fun/badge/gta6-cover-art-01/Robekk/makefun-gta6-cover-art-01/rank.svg)](https://make.fun/bounty/gta6-cover-art-01)
 [![reward](https://make.fun/badge/gta6-cover-art-01/Robekk/makefun-gta6-cover-art-01/reward.svg)](https://make.fun/bounty/gta6-cover-art-01)
 
-An offline web app that turns your photos and a caption into multi-panel,
-GTA-style cover art — posterized, duotone-graded, halftone-screened and
-lettered — and exports it as a PNG in the common post sizes. An entry for
-the make.fun bounty [gta6-cover-art-01](https://make.fun/bounty/gta6-cover-art-01).
+# Marina Heat — Cast Cover Studio
 
-## What it does
+A fully offline web app that designs ensemble cast cover posters in the
+grand-theft-auto cover tradition: a slanted multi-panel cast grid with gold
+keylines, a chrome-gold masthead title, a script subtitle, and the full
+magazine furniture — quote bar with five stars, ribbon, billing block,
+COMING SOON, a gold seal and a barcode whose bars are derived from the
+title itself. Everything is drawn on canvas by one renderer, so the live
+preview and the exported PNGs are the same picture.
 
-- **Any photo.** Add your own photos (read locally, never uploaded) or start
-  from the three bundled samples. Every panel of the grid takes any photo;
-  click a panel to select it, click a photo to fill it, drag to position the
-  crop, scroll or use the slider to zoom.
-- **Five panel layouts** in the classic cover grammar: Showcase (hero +
-  stacked plates + foot strip), Mosaic (tall plate, small-plate column and a
-  title plate of its own), Strips, Duo + Title Band, and Solo Full-Bleed.
-- **A real grade, not a CSS filter.** Each photo is posterized and
-  gradient-mapped pixel by pixel through the chosen palette — Heatwave,
-  Sunset, Neon Nights, Golden Hour, Lagoon — with a halftone dot screen
-  pressed into the dark tones, a per-panel vignette and film grain over the
-  finished cover. Grade strength and the halftone screen are adjustable.
-- **A lettering system.** Kicker, two lines of gradient block type with a
-  heavy ink outline, a script subtitle, a tagline bar and a starburst badge —
-  every word editable, all drawn fresh on the canvas for each cover.
-- **One-click export** at 1080 × 1080, 1080 × 1350 and 1920 × 1080. The PNG
-  the app writes is rendered by the same code as the live preview, so what
-  you see is exactly what you share.
-- **Original throughout.** No Rockstar logo, artwork or fonts; the title
-  treatments, layouts and port-side city of Marina Heat are the studio's own.
+## The cast
 
-## Run it
+Seven panels, seven players: **The Boss** Don Aurelio Marino, **The Driver**
+Roxy Delmar, **The Fixer** Piper Voss, **The Insider** Madame Guile,
+**The Lookout** Rio Ferraro, **The Captain** Elias Crowe and **The Getaway**,
+a scarlet convertible. The landscape cover runs the five-panel cut (boss
+hero down the middle, two panels a side); the square and portrait covers
+seat all seven, with the captain and the getaway sharing the bottom row.
 
-The app is plain static files under `app/` — serve that folder with any
-static file server, or just open it through one, and it works fully offline:
+## The studio
 
-```sh
-node serve.ts            # serves app/ at http://localhost:8080
-```
+- **Cast panels** — pick a panel, then assign it any of the nine bundled
+  photos, or upload your own (read locally, never sent anywhere).
+- **Reframe by hand** — drag on the cover to move the selected member's
+  shot, scroll to zoom, or use the zoom slider; role tags and names are
+  editable per panel.
+- **Words & furniture** — title, subtitle, ribbon, quote, publisher,
+  volume, billing block, COMING SOON and seal text are all live inputs.
+- **Palettes** — Sunset Cinema, Neon Nights, Vice Pastel and Noir Gold
+  re-grade every photo and re-ink the furniture.
+- **Export** — one click renders a PNG at the exact size: 1920×1080,
+  1080×1080 or 1080×1350.
 
-Three steps: pick photos, pick a layout and a grade, export the PNG.
+## Running it
 
-## Hand it in
-
-`main.ts` (Node 22, standard library only) copies `app/` and `screenshots/`
-to the output directory and writes `dossier.json` with the kit's vendored
-`buildDossier`, then self-checks the tree against the gate's caps:
+Open `app/index.html` in a browser, or serve the folder with the bundled
+development server:
 
 ```sh
-mkdir -p out && MAKEFUN_OUTPUT_DIR=out node main.ts
+node serve.ts --port 8901   # http://localhost:8901
 ```
 
-## Screenshots
+There is no build step and the app makes zero network requests: the fonts
+(Anton and Yellowtail, under the SIL Open Font License in `app/fonts/`) and
+every photo ship inside `app/`.
 
-- `screenshots/1-cover.jpg` — a 1920 × 1080 cover the app exported
-  (Showcase layout, Heatwave grade), shown at 1280 × 720.
-- `screenshots/2-editor.jpg` — the editor with the samples loaded and the
-  Showcase cover in the live preview, panel 1 selected.
-- `screenshots/3-cover-square.jpg` — a 1080 × 1080 cover the app exported
-  (Mosaic layout with its own title plate, Sunset grade).
-- `screenshots/4-editor-panels.jpg` — the editor on the Strips layout with
-  the Neon Nights grade at the 1080 × 1350 size.
+## The entry program
 
-## Credits
+`main.ts` (Node 22, standard library only) assembles the submission:
+it copies `app/` and `screenshots/` into the output directory and writes
+`dossier.json` with the vendored `buildDossier`:
 
-- Display fonts: **Anton** and **Yellowtail**, both under the SIL Open Font
-  License 1.1 (license text in `app/fonts/OFL.txt`), bundled as files under
-  `app/fonts/`.
-- Sample photos: `boulevard.jpg` and `pier.jpg` ship with the bounty kit and
-  were made with an image model for make.fun, free to use;
-  `convertible.jpg` was made with an image model for this entry.
-- Everything else — the grading pipeline, layouts, lettering and editor —
-  was written for this entry.
+```sh
+MAKEFUN_OUTPUT_DIR=/tmp/out node --experimental-strip-types main.ts
+```
+
+The dossier is deterministic — the same tree writes the same bytes — and
+the program refuses a dossier over the 1.5 MiB cap.
